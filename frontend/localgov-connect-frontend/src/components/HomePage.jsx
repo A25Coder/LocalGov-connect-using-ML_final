@@ -3,13 +3,12 @@ import { supabase } from '../supabaseClient';
 import { Link } from 'react-router-dom';
 
 const HomePage = () => {
+    // ... (all your state and functions remain the same) ...
     const [issues, setIssues] = useState([]);
     const [trendingIssues, setTrendingIssues] = useState([]);
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);
     const [likedIssues, setLikedIssues] = useState(new Set());
-
-    // Filter states
     const [filterSeverity, setFilterSeverity] = useState('all');
     const [filterStatus, setFilterStatus] = useState('all');
     const [filterCategory, setFilterCategory] = useState('all');
@@ -19,10 +18,8 @@ const HomePage = () => {
             setLoading(true);
             const { data: { user } } = await supabase.auth.getUser();
             setUser(user);
-
             await fetchIssues();
             await fetchTrendingIssues();
-
             if (user) {
                 const { data: likedData, error } = await supabase
                     .from('issue_likes')
@@ -30,7 +27,6 @@ const HomePage = () => {
                     .eq('user_id', user.id);
                 if (!error) setLikedIssues(new Set(likedData.map(like => like.issue_id)));
             }
-
             setLoading(false);
         };
         fetchUserAndInitialData();
@@ -47,7 +43,6 @@ const HomePage = () => {
             .on('postgres_changes', { event: '*', schema: 'public', table: 'comments' }, () => fetchIssues())
             .on('postgres_changes', { event: '*', schema: 'public', table: 'issues' }, () => fetchIssues())
             .subscribe();
-
         return () => supabase.removeChannel(channel);
     }, [user]);
 
@@ -72,7 +67,6 @@ const HomePage = () => {
                 .select('id, title, issue_likes(count)')
                 .gt('created_at', sevenDaysAgo);
             if (error) throw error;
-
             const sortedByLikes = data.sort((a, b) => (b.issue_likes[0]?.count || 0) - (a.issue_likes[0]?.count || 0));
             setTrendingIssues(sortedByLikes.slice(0, 3));
         } catch (error) {
@@ -86,7 +80,6 @@ const HomePage = () => {
         const newLikedIssues = new Set(likedIssues);
         isLiked ? newLikedIssues.delete(issueId) : newLikedIssues.add(issueId);
         setLikedIssues(newLikedIssues);
-
         setIssues(currentIssues =>
             currentIssues.map(issue => {
                 if (issue.id === issueId) {
@@ -96,7 +89,6 @@ const HomePage = () => {
                 return issue;
             })
         );
-
         const { error } = await supabase.rpc('toggle_like', { p_issue_id: issueId, p_user_id: user.id });
         if (error) console.error("Error toggling like:", error);
     };
@@ -111,29 +103,27 @@ const HomePage = () => {
 
     return (
         <div className="min-h-full bg-blue-20 rounded-lg p-4">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* CHANGE 1: Added lg:items-start here */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:items-start">
                 
                 {/* Left Column */}
                 <div className="lg:col-span-2 space-y-6">
-
-                    {/* Styled Filter Bar */}
+                    {/* ... (left column content is unchanged) ... */}
                     <div className="bg-white p-4 rounded-xl shadow-md flex flex-wrap gap-4 items-center mb-6 border border-gray-200">
                         <div className="flex flex-col">
                             <label className="text-sm font-medium text-gray-700 mb-1">Severity</label>
-                            <select value={filterSeverity} onChange={(e) => setFilterSeverity(e.target.value)}
-                                className="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
+                            <select value={filterSeverity} onChange={(e) => setFilterSeverity(e.target.value)} className="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
                                 <option value="all">All</option>
                                 <option value="emergency">Emergency</option>
                                 <option value="critical">Critical</option>
                                 <option value="urgent">Urgent</option>
-                                 <option value="needs attention">Needs Attention</option>
+                                <option value="needs attention">Needs Attention</option>
                                 <option value="minor">Minor</option>
                             </select>
                         </div>
                         <div className="flex flex-col">
                             <label className="text-sm font-medium text-gray-700 mb-1">Status</label>
-                            <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}
-                                className="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400">
+                            <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400">
                                 <option value="all">All</option>
                                 <option value="Pending">Pending</option>
                                 <option value="In Progress">In Progress</option>
@@ -142,22 +132,19 @@ const HomePage = () => {
                         </div>
                         <div className="flex flex-col">
                             <label className="text-sm font-medium text-gray-700 mb-1">Category</label>
-                            <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}
-                                className="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400">
+                            <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} className="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400">
                                 <option value="all">All</option>
                                 <option value="accident">Accident</option>
                                 <option value="fire">Fire</option>
                                 <option value="traffic">Traffic</option>
                                 <option value="roads">Roads</option>
-                                 <option value="water">Water</option>
+                                <option value="water">Water</option>
                                 <option value="nature">Nature</option>
                                 <option value="electricity">Electricity</option>
                                 <option value="sanitation">Sanitation</option>
                             </select>
                         </div>
                     </div>
-
-                    {/* Issues Feed */}
                     {filteredIssues.map(issue => {
                         const isLikedByUser = likedIssues.has(issue.id);
                         return (
@@ -191,7 +178,8 @@ const HomePage = () => {
                 </div>
 
                 {/* Right Column */}
-                <div className="lg:col-span-1 space-y-6">
+                {/* CHANGE 2: Added sticky top-4 here */}
+                <div className="lg:col-span-1 space-y-6 sticky top-4">
                     <div className="bg-white p-6 rounded-xl shadow-md">
                         <h3 className="text-lg font-bold mb-4">Community Stats</h3>
                         <div className="space-y-3">
