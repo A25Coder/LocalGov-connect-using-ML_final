@@ -11,7 +11,7 @@ const getSeverityInfo = (severity) => {
       return { label: '🔥 Critical', className: 'bg-orange-100 text-orange-800' };
     case 'urgent':
       return { label: '⚠️ Urgent', className: 'bg-yellow-100 text-yellow-800' };
-    case 'medium':
+    case 'needs attention':
       return { label: '🔵 Needs Attention', className: 'bg-blue-100 text-blue-800' };
     default:
       return { label: 'Minor', className: 'bg-gray-100 text-gray-800' };
