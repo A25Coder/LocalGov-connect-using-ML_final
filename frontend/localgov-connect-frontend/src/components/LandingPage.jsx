@@ -22,7 +22,7 @@ function LandingPage() {
       {/* This section now has its own specific background image */}
       <div
         className="relative bg-cover bg-center text-white"
-        style={{ backgroundImage: "url('/back.png')" }} // Ensure 'back.png' is in your /public folder
+        style={{ backgroundImage: "url('/Gemini_Generated_Image_s05m65s05m65s05m.png')" }} // Ensure 'back.png' is in your /public folder
       >
         {/* A subtle gradient overlay to ensure text is readable over the image */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent"></div>
