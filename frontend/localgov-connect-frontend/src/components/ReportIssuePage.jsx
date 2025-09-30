@@ -154,6 +154,7 @@ function ReportIssuePage() {
       const { error: insertError } = await supabase.from('issues').insert({
         title,
         description,
+        status: 'Pending', 
         location: `${location.lat},${location.lng}`,
         department_id: targetDept.id,
         category: finalCategory,
